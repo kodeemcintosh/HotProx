@@ -27,7 +27,7 @@ type Prox struct {
 
 
 func main() {
-	p := Prox{}
+	p := new(Prox)
 	p.GetPort()
 	p.GetTargetBase()
 	// p.proxy := httputil.NewSingleHostReverseProxy()
@@ -41,8 +41,8 @@ func main() {
 func (p *Prox)ProxHandler() func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, req *http.Request) {
-		p.getApi(req)
-		p.buildTarget()
+		p.GetApi(req)
+		p.BuildTarget()
 		*p.proxy = httputil.NewSingleHostReverseProxy(p.target)
 
 		p.proxy.ServeHTTP(w, req)
@@ -74,35 +74,36 @@ func regexCheck(s string) (string, error){
 	}
 }
 
-func (p *Prox)getPort() {
+func (p *Prox)GetPort() {
+	var err error
 	fmt.Println("Enter the localhost port on which HotProx should listen :  ")
-	arg = os.Args[0]
-	*p.port, err = regexCheck(arg)
+	arg := os.Args[0]
+	p.port, err = regexCheck(arg)
 	errCheck(err)
 }
 
-func (p *Prox)getTargetBase() {
+func (p *Prox)GetTargetBase() {
 	var err error
 	fmt.Println("Example: https://www.google.com")
 	fmt.Println("Enter the base url (leaving out any api endpoints or end slashes")
 	fmt.Println("where your request should be forwarded :  ")
 	arg := os.Args[0]
-	*p.tBase, err = regexCheck(arg)
+	p.tBase, err = regexCheck(arg)
 	errCheck(err)
 }
 
-func (p *Prox)getApi(req *http.Request) {
-	reqUrl := io.WriteString(req.URL)
+func (p *Prox)GetApi(req *http.Request) {
+	reqUrl := io.WriteString(*req.URL)
 	// api := bytes.Replace([]byte(reqUrl), []byte(p.tBase), []byte(""))
 	// should assign this api variable to the *p.api pointer if this Replace works correctly
-	fmt.Println(api)
-	*p.api = bytes.Replace([]byte(reqUrl), []byte(p.tBase), []byte(""))
+	p.api = bytes.Replace([]byte(reqUrl), []byte(p.tBase), []byte(""))
 
 	// incase you need to map querystring variables in the future
 	// queryString := *req.URL.Query()
 }
 
-func (p *Prox)buildTarget() {
+func (p *Prox)BuildTarget() {
+	var err error
 	// target := fmt.Sprintf("%x%x", p.tBase, p.api)
 	target := fmt.Sprint(p.tBase, p.api)
 	*p.target, err = url.Parse(target)
